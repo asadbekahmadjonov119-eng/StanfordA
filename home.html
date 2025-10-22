@@ -1,0 +1,424 @@
+
+
+
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stanford Academy</title>
+  <link rel="icon" type="image/svg+xml" href="./Group.svg">
+
+  <style>
+    body { background:#000; color:#0f172a; margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; }
+    .container { max-width:18000px; height:660px; background:#fff2c0; margin:10px; padding:20px; border-radius:12px; box-shadow:0 0 20px rgba(245,232,182,0.8); display:flex; flex-direction:column; }
+    h1 { margin:0; font-size:22px; color:#2563eb; }
+    .logoStanford { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .layout { display:flex; gap:12px; height:100%; overflow:hidden; }
+    .sidebar { width:280px; border-right:1px solid #eef2f7; padding-right:12px; display:flex; flex-direction:column; }
+    #groupsList { flex:1; overflow-y:auto; margin-top:8px; padding-right:6px; max-height:250px; }
+    .main { flex:1; padding-left:12px; display:flex; flex-direction:column; overflow:hidden; height: 1000px; }
+    .row { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
+    input, select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; flex:1; min-width:120px; }
+    button { padding:8px 12px; border-radius:8px; border:0; background:#2563eb; color:white; cursor:pointer; }
+    .group-item { padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    .group-item.selected { background:#eef2ff; }
+    .student-item { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding:8px 0; }
+    .student-left { display:flex; flex-direction:column; gap:3px; }
+    .student-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .paid, .not-paid { padding:4px 8px; border-radius:6px; font-size:13px; color:white; min-width:80px; text-align:center; }
+    .paid { background:#10b981; } .not-paid { background:#ef4444; }
+    .students { flex:1; overflow-y:auto; max-height:450px; }
+    .panel { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; }
+    .panel-content { background:white; padding:20px; border-radius:10px; max-width:400px; width:90%; max-height:80vh; overflow-y:auto; }
+    .payment-history { max-height:150px; overflow-y:auto; border:1px solid #e5e7eb; padding:6px; border-radius:6px; background:#f9fafb; }
+    .small { font-size:13px; color:#475569; margin-bottom:6px; }
+    .days-select {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 ustun */
+  grid-auto-rows: auto; /* har qator balandligi avtomatik */
+  gap: 5px;
+  width: 50px;
+}
+
+    .days-select label { font-size:12px; }
+  
+    .days-select label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+      justify-content: flex-start;
+    }
+    .days-select label:hover { background: #e0e7ff; border-color: #c7d2fe; }
+    .inputBox { accent-color: #2563eb; transform: scale(0.9); margin: -20px; }
+    .Pagelogo{ width: 320px; height: 320px; display: flex; align-items: center; margin-left: 380px; margin-top: 120px; }
+    @media(max-width:800px){ .layout{flex-direction:column;} .sidebar{width:100%;border:0;border-bottom:1px solid #eef2f7;} }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logoStanford">
+    <img src="./Stanford logosvg1.svg" alt="logo" width="40" height="40">
+    <h1>Stanford Academy</h1>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="small">Yangi guruh yaratish</div>
+      <div class="row">
+        <input id="groupName" type="text" placeholder="Guruh nomi" />
+        <input id="teacherName" type="text" placeholder="O‘qituvchi ismi" />
+        <input id="startTime" type="time" />
+        <input id="endTime" type="time" />
+      </div>
+      <div class="small">Hafta kunlari</div>
+      <div class="days-select" id="daysSelect">
+        <div>
+          <label><input class="inputBox" type="checkbox" value="Dushanba"> Du</label>
+          <label><input class="inputBox" type="checkbox" value="Seshanba"> Se</label>
+          <label><input class="inputBox" type="checkbox" value="Chorshanba"> Ch</label>
+        </div>
+        <div>
+          <label><input class="inputBox" type="checkbox" value="Payshanba"> Pa</label>
+          <label><input class="inputBox" type="checkbox" value="Juma"> Ju</label>
+          <label><input class="inputBox" type="checkbox" value="Shanba"> Sha</label>
+        </div>
+      </div>
+      <button id="createGroup" style="margin-top:8px;">Yarat</button>
+      <div class="small" style="margin-top:12px;">Guruhlar</div>
+      <div id="groupsList"></div>
+    </aside>
+
+    <main class="main">
+      <div id="noGroup" class="small">
+        Guruh tanlanmagan. Chapdan guruh tanlang yoki yangisini yarating.
+        <img class="Pagelogo" src="./stanford logosvg.svg" alt="Logo">
+      </div>
+      <div id="groupPanel" style="display:none;">
+        <div class="row">
+          <h2 id="groupTitle" style="margin:0;font-size:18px;"></h2>
+          <button id="updateGroup" style="background:#f59e0b;">Tahrirlash</button>
+          <button id="deleteGroup" style="background:#ef4444;">Guruhni oʻchirish</button>
+        </div>
+        <div class="small" id="groupInfo"></div>
+        <div class="row">
+          <input id="studentName" type="text" placeholder="O‘quvchi ismi va familiyasi" />
+          <input id="studentPhone" type="tel" placeholder="Telefon raqami (+998...)" />
+          <button id="addStudent">Qo‘shish</button>
+        </div>
+        <div class="students">
+          <div class="small">O‘quvchilar ro‘yxati</div>
+          <ul id="studentsList"></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="panelContainer"></div>
+
+<script>
+const STORAGE_KEY = "teacher_app_v11";
+let state = { groups: [], selectedGroupId: null };
+
+// --- STATE LOAD / SAVE ---
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch {}
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateMonthlyStatus();
+}
+
+// --- DOM ELEMENTS ---
+const groupNameInput = document.getElementById("groupName");
+const teacherNameInput = document.getElementById("teacherName");
+const startTimeInput = document.getElementById("startTime");
+const endTimeInput = document.getElementById("endTime");
+const daysSelect = document.querySelectorAll("#daysSelect input[type='checkbox']");
+const createGroupBtn = document.getElementById("createGroup");
+const groupsListEl = document.getElementById("groupsList");
+const groupPanel = document.getElementById("groupPanel");
+const noGroup = document.getElementById("noGroup");
+const groupTitle = document.getElementById("groupTitle");
+const groupInfo = document.getElementById("groupInfo");
+const studentNameInput = document.getElementById("studentName");
+const studentPhoneInput = document.getElementById("studentPhone");
+const addStudentBtn = document.getElementById("addStudent");
+const studentsListEl = document.getElementById("studentsList");
+const deleteGroupBtn = document.getElementById("deleteGroup");
+const updateGroupBtn = document.getElementById("updateGroup");
+const panelContainer = document.getElementById("panelContainer");
+
+// --- MONTHLY STATUS: HAR OY TO'LAMAGAN ---
+function updateMonthlyStatus() {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  state.groups.forEach(g => {
+    g.students.forEach(s => {
+      if (!s.lastMonthPaid || s.lastMonthPaid !== currentMonth) {
+        s.paid = false;
+        s.lastMonthPaid = currentMonth;
+      }
+    });
+  });
+}
+
+// --- CREATE GROUP ---
+createGroupBtn.onclick = () => {
+  const name = groupNameInput.value.trim();
+  const teacher = teacherNameInput.value.trim();
+  const start = startTimeInput.value;
+  const end = endTimeInput.value;
+  const selectedDays = Array.from(daysSelect).filter(ch => ch.checked).map(ch => ch.value);
+  if (!name || !teacher || !start || !end) return alert("Iltimos, barcha maydonlarni to‘ldiring!");
+  if (selectedDays.length === 0) return alert("Iltimos, kamida bitta hafta kunini tanlang!");
+
+  const newGroup = { id:String(Date.now()), name, teacher, start, end, days:selectedDays, students:[] };
+  state.groups.unshift(newGroup);
+
+  groupNameInput.value = ""; teacherNameInput.value = ""; startTimeInput.value = ""; endTimeInput.value = "";
+  daysSelect.forEach(ch => ch.checked = false);
+
+  saveState();
+  render();
+};
+
+// --- RENDER ---
+function render() {
+  updateMonthlyStatus(); // har renderda tekshiradi
+
+  groupsListEl.innerHTML = "";
+  state.groups.forEach((g) => {
+    const div = document.createElement("div");
+    div.className = "group-item" + (state.selectedGroupId === g.id ? " selected" : "");
+    div.innerHTML = `
+      <div>
+        <strong>${g.name}</strong><br>
+        <span class="small">${g.teacher} (${g.start}–${g.end})</span><br>
+        <span class="small">📅 ${g.days.join(", ")}</span>
+      </div>
+      <span class="small">${g.students.length} o‘quvchi</span>
+    `;
+    div.onclick = () => { state.selectedGroupId = g.id; saveState(); render(); };
+    groupsListEl.appendChild(div);
+  });
+
+  const selected = state.groups.find(g => g.id === state.selectedGroupId);
+  if (!selected) { groupPanel.style.display = "none"; noGroup.style.display = "block"; }
+  else {
+    groupPanel.style.display = "block"; noGroup.style.display = "none";
+    groupTitle.textContent = selected.name;
+    groupInfo.textContent = `O‘qituvchi: ${selected.teacher} | Dars: ${selected.start}–${selected.end} | 📅 Kunlar: ${selected.days.join(", ")}`;
+    studentsListEl.innerHTML = "";
+    selected.students.forEach((s, i) => {
+      s.number = i+1;
+      const li = document.createElement("li");
+      li.className = "student-item";
+      li.innerHTML = `
+        <div class="student-left">
+          <strong>${s.number}. ${s.name}</strong>
+          <small>📞 ${s.phone}</small>
+          <small>Qo‘shilgan: ${s.joinDate}</small>
+        </div>
+        <div class="student-right">
+          <div class="${s.paid ? "paid" : "not-paid"}">${s.paid ? "To‘lagan" : "To‘lamagan"}</div>
+          <button onclick="openPaymentPanel('${selected.id}','${s.id}')">To‘lov</button>
+          <button style="background:#f59e0b;" onclick="editStudent('${selected.id}','${s.id}')">Tahrirlash</button>
+          <button style="background:#ef4444;" onclick="deleteStudent('${selected.id}','${s.id}')">O‘chirish</button>
+        </div>
+      `;
+      studentsListEl.appendChild(li);
+    });
+  }
+}
+
+// --- LOAD STATE & INITIAL RENDER ---
+loadState();
+render();
+
+// --- STUDENT FUNCTIONS ---
+addStudentBtn.onclick = () => {
+  const name = studentNameInput.value.trim();
+  const phone = studentPhoneInput.value.trim();
+  if (!name || !phone) return alert("Ism va telefon raqamini kiriting!");
+  const g = state.groups.find(x => x.id === state.selectedGroupId);
+  if (!g) return alert("Avval guruh tanlang!");
+  const newStudent = { id:String(Date.now()), name, phone, paid:false, payments:[], joinDate: new Date().toLocaleDateString() };
+  g.students.push(newStudent);
+  g.students.forEach((s,i)=>s.number=i+1);
+  studentNameInput.value = ""; studentPhoneInput.value = "";
+  saveState(); render();
+};
+
+function editStudent(groupId, studentId) {
+  const g = state.groups.find(x => x.id===groupId);
+  const s = g.students.find(x=>x.id===studentId);
+  const newName = prompt("Yangi ism va familiya:", s.name);
+  const newPhone = prompt("Yangi telefon raqami:", s.phone);
+  if (!newName || !newPhone) return;
+  s.name=newName; s.phone=newPhone;
+  saveState(); render();
+}
+
+function deleteStudent(groupId, studentId) {
+  if (!confirm("O‘quvchini o‘chirmoqchimisiz?")) return;
+  const g = state.groups.find(x => x.id===groupId);
+  g.students = g.students.filter(s=>s.id!==studentId);
+  g.students.forEach((s,i)=>s.number=i+1);
+  saveState(); render();
+}
+
+// Guruhni o‘chirish
+deleteGroupBtn.onclick = () => {
+  if (!state.selectedGroupId) return;
+  if (!confirm("Guruhni o‘chirmoqchimisiz?")) return;
+  state.groups = state.groups.filter(g => g.id !== state.selectedGroupId);
+  state.selectedGroupId = null;
+  saveState();
+  render();
+};
+
+
+// // Guruhni tahrirlash
+// updateGroupBtn.onclick = () => {
+//   const g = state.groups.find(g => g.id === state.selectedGroupId);
+//   if (!g) return;
+
+//   const newName = prompt("Guruh nomi:", g.name);
+//   const newTeacher = prompt("O‘qituvchi ismi:", g.teacher);
+//   const newStart = prompt("Dars boshlanish vaqti:", g.start);
+//   const newEnd = prompt("Dars tugash vaqti:", g.end);
+
+//   if (!newName || !newTeacher || !newStart || !newEnd) return alert("Barcha maydonlarni to‘ldiring!");
+
+//   // Hafta kunlarini tanlash
+//   const newDays = prompt("Hafta kunlarini vergul bilan ajrating (Dushanba,Seshanba,...) :", g.days.join(","));
+//   const daysArray = newDays.split(",").map(d => d.trim()).filter(d => d);
+
+//   g.name = newName;
+//   g.teacher = newTeacher;
+//   g.start = newStart;
+//   g.end = newEnd;
+//   if (daysArray.length) g.days = daysArray;
+
+//   saveState();
+//   render();
+// };
+
+
+updateGroupBtn.onclick = () => {
+  const g = state.groups.find(g => g.id === state.selectedGroupId);
+  if (!g) return;
+
+  // Modal yaratish
+  const panel = document.createElement("div");
+  panel.className = "panel";
+  panel.innerHTML = `
+    <div class="panel-content">
+      <h3>Guruhni tahrirlash</h3>
+      <div class="row">
+        <input id="editGroupName" type="text" value="${g.name}" placeholder="Guruh nomi">
+        <input id="editTeacherName" type="text" value="${g.teacher}" placeholder="O‘qituvchi ismi">
+      </div>
+      <div class="row">
+        <label>Dars boshlanishi: <input id="editStartTime" type="time" value="${g.start}"></label>
+        <label>Dars tugashi: <input id="editEndTime" type="time" value="${g.end}"></label>
+      </div>
+      <div class="small">Hafta kunlari:</div>
+      <div class="days-select" id="editDaysSelect">
+        <label><input type="checkbox" value="Dushanba"> Du</label>
+        <label><input type="checkbox" value="Seshanba"> Se</label>
+        <label><input type="checkbox" value="Chorshanba"> Ch</label>
+        <label><input type="checkbox" value="Payshanba"> Pa</label>
+        <label><input type="checkbox" value="Juma"> Ju</label>
+        <label><input type="checkbox" value="Shanba"> Sha</label>
+      </div>
+      <div style="margin-top:12px;">
+        <button id="saveGroup" style="background:#2563eb;">Saqlash</button>
+        <button id="closePanel" style="background:#ccc;margin-left:10px;">Yopish</button>
+      </div>
+    </div>
+  `;
+
+  // Hafta kunlarini oldindan belgilash
+  const checkboxes = panel.querySelectorAll("#editDaysSelect input[type='checkbox']");
+  checkboxes.forEach(ch => { ch.checked = g.days.includes(ch.value); });
+
+  // Panelni containerga qo‘shish
+  panelContainer.innerHTML = "";
+  panelContainer.appendChild(panel);
+
+  // Yopish tugmasi
+  panel.querySelector("#closePanel").onclick = () => panel.remove();
+
+  // Saqlash tugmasi
+  panel.querySelector("#saveGroup").onclick = () => {
+    const newName = panel.querySelector("#editGroupName").value.trim();
+    const newTeacher = panel.querySelector("#editTeacherName").value.trim();
+    const newStart = panel.querySelector("#editStartTime").value;
+    const newEnd = panel.querySelector("#editEndTime").value;
+    const newDays = Array.from(checkboxes).filter(ch => ch.checked).map(ch => ch.value);
+
+    if (!newName || !newTeacher || !newStart || !newEnd) return alert("Barcha maydonlarni to‘ldiring!");
+    if (newDays.length === 0) return alert("Kamida bitta hafta kunini tanlang!");
+
+    // Guruhni yangilash
+    g.name = newName;
+    g.teacher = newTeacher;
+    g.start = newStart;
+    g.end = newEnd;
+    g.days = newDays;
+
+    saveState();
+    render();
+    panel.remove();
+  };
+};
+
+
+// --- PAYMENT PANEL ---
+function openPaymentPanel(groupId, studentId) {
+  const g = state.groups.find(x=>x.id===groupId);
+  const s = g.students.find(x=>x.id===studentId);
+  const panel = document.createElement("div");
+  panel.className="panel";
+  panel.innerHTML=`
+    <div class="panel-content">
+      <h3>${s.name} — to‘lov ma’lumotlari</h3>
+      <label>Sana: <input id="payDate" type="date"></label><br><br>
+      <label>Summasi (so‘m): <input id="payAmount" type="number" placeholder="300000"></label><br><br>
+      <button id="savePayment">Saqlash</button>
+      <button id="closePanel" style="background:#ccc;margin-left:10px;">Yopish</button>
+      <hr>
+      <div class="small">To‘lovlar tarixi:</div>
+      <ul class="payment-history">
+        ${ s.payments.length ? s.payments.map(p=>`<li>${p.date} — ${p.amount} so‘m</li>`).join('') : "<li>Hozircha to‘lov yo‘q</li>" }
+      </ul>
+    </div>`;
+  panel.querySelector("#closePanel").onclick = () => panel.remove();
+  panel.querySelector("#savePayment").onclick = ()=>{
+    const date=panel.querySelector("#payDate").value;
+    const amount=panel.querySelector("#payAmount").value;
+    if(!date||!amount) return alert("Iltimos, sanani va summani kiriting!");
+    s.payments.push({date, amount});
+    s.paid = true;
+    s.lastMonthPaid = new Date().getMonth();
+    saveState(); render(); panel.remove();
+  };
+  panelContainer.innerHTML=""; panelContainer.appendChild(panel);
+}
+</script>
+</body>
+</html>
+
